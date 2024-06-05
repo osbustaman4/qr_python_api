@@ -4,58 +4,91 @@ import random
 import tempfile
 import traceback
 import os
+
 import requests
 import hashlib
 import hmac
 
+import cv2  # OpenCV para manipulación de imágenes
+from pyzbar.pyzbar import decode  # pyzbar para decodificar códigos QR
+from PIL import Image  # Pillow para manipulación de imágenes
+
 from datetime import date, datetime, timedelta
-from decouple import config as load_data
-from flask import request, jsonify, Blueprint
-from lib.Email import EmailSender
-from lib.ExceptionsHTTP import HTTP404Error
-from lib.Stech import Logger, Stech, Validate
-from lib.ExceptionsJson import ExceptionsJson
+from flask import Blueprint, request, jsonify, send_file, Response
 
-from src.decorators import verify_user_fcm
-from sqlalchemy import desc, literal
-from sqlalchemy import Integer, String, update, func, and_, or_, case, Date, cast, literal_column, text
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from sqlalchemy.orm import aliased
-
-from datetime import datetime
-
-from src.utils.FCM import send_push_notification
-from src.utils.Utils import Utils, Utils_Mails
-
-# main_funcion_ejemplo = Blueprint('funcion_ejemplo', __name__)
+from src.utils.Utils import Utils
 
 
+main_read_image_code = Blueprint('main_read_image_code', __name__)
 
-@main_funcion_ejemplo.route('/', methods=['POST'])
-@verify_user_fcm
-def funcion_ejemplo():
+@main_read_image_code.route('/', methods=['POST'])
+def read_image_code():
+
     try:
+        # Obtenemos la imagen en base64
+        data = request.json
+        image = data['image64']
 
-		session = Stech.get_session(load_data('ENVIRONMENTS'))
-		
-        data = request.get_json()
-        error_validate, is_validate = Validate.validate_json_keys(data)
-        if is_validate:
-            raise ValueError(error_validate)
+        # Decodificamos la imagen
+        image_decode = base64.b64decode(image)
+        # Guardamos la imagen decodificada en un archivo temporal
+        with tempfile.NamedTemporaryFile(delete=False) as temp:
+            temp.write(image_decode)
+            temp_path = temp.name
 
-
+        # Leer el código QR de la imagen temporal
+        qr_result = leer_qr(temp_path)
+        
+        # Crear el JSON de respuesta
         response = {
-            "success": True
+            "success": True,
+            "qr_result": qr_result
         }
+        
         return jsonify(response), 200
-
     except ValueError as ex:
         return Utils.create_response(str(ex), False, 404)
-
-    except SQLAlchemyError as ex:
-        return Utils.create_response(str(ex), False, 500)
 
     except Exception as ex:
         message = f"{str(ex)} - {str(traceback.format_exc())}"
         return Utils.create_response(message, False, 500)
     
+
+
+# Función para ajustar la imagen antes de decodificar el código QR
+def procesar_imagen(ruta_imagen):
+    # Leer la imagen
+    imagen = cv2.imread(ruta_imagen)
+    
+    # Convertir a escala de grises
+    gris = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
+    
+    # Aplicar filtro de desenfoque para reducir el ruido
+    desenfoque = cv2.GaussianBlur(gris, (5, 5), 0)
+    
+    # Aplicar umbral para mejorar el contraste
+    _, umbralizada = cv2.threshold(desenfoque, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    
+    return umbralizada
+
+
+# Función para decodificar un código QR desde una imagen procesada
+def leer_qr(ruta_imagen):
+    # Procesar la imagen
+    imagen_procesada = procesar_imagen(ruta_imagen)
+    
+    # Decodificar el código QR en la imagen
+    decodificaciones = decode(imagen_procesada)
+    
+    # Si se encontró al menos un código QR
+    if decodificaciones:
+        # Retornar el dato decodificado del primer código QR encontrado
+        return decodificaciones[0].data.decode('utf-8')
+    else:
+        # Si no se encontró ningún código QR
+        return None
+
+
+
+
+

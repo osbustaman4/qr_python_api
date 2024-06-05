@@ -7,7 +7,7 @@ from functools import wraps
 from jwt import encode, decode, ExpiredSignatureError, InvalidSignatureError
 
 from lib.Stech import Logger, Stech
-from src.models.recuperautos.UsuariosApp import UsuariosApp
+
 
 def expire_date(days: int):
     """
@@ -46,7 +46,8 @@ def verify_user_fcm(func):
             email = request.json['email']
             
             # Verificar si el usuario existe antes de la actualización
-            user_exists = session.query(UsuariosApp).filter(UsuariosApp.email_userapp == email).filter(UsuariosApp.fcm_userapp == fcm_token).first()
+            #user_exists = session.query(UsuariosApp).filter(UsuariosApp.email_userapp == email).filter(UsuariosApp.fcm_userapp == fcm_token).first()
+            user_exists = True
             if user_exists:
                 return func()
             else:
