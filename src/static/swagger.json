@@ -1,0 +1,140 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "Code With Prince",
+        "version": "1.0.0",
+        "title": "Documentación Apis GPSimple",
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        }
+    },
+    "tags": [{
+        "name": "CarCloud APIs",
+        "description": ""
+    }],
+    "servers": [{
+        "url": "/"
+    }],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "requestHeaders": {
+            "Authorizations": {
+                "description": "Token de usuario para poder consumir otros endpoint",
+                "schema": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas": {
+            "TodoList": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Id": {
+                "type": "integer",
+                "properties": {
+                    "name": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "update": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "completed": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        }
+    },
+    "security": [{
+        "bearerAuth": []
+    }],
+    "paths": {
+        "/login": {
+            "post": {
+                "tags": [""],
+                "summary": "Resumen de la operación POST para /login",
+                "requestBody": {
+                    "description": "Logeo de usuario",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "description": "username"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "description": "password"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "description": "Token de usuario para poder consumir otros endpoint"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Mensaje que indica que el recurso no fue encontrado"
+                                        }
+                                    },
+                                    "example": {
+                                        "message": "Recurso no encontrado"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
