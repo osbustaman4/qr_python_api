@@ -1,13 +1,6 @@
 import base64
-import json
-import random
 import tempfile
 import traceback
-import os
-
-import requests
-import hashlib
-import hmac
 
 import cv2  # OpenCV para manipulación de imágenes
 from pyzbar.pyzbar import decode  # pyzbar para decodificar códigos QR
