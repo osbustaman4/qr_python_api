@@ -9,6 +9,7 @@ from PIL import Image  # Pillow para manipulación de imágenes
 from datetime import date, datetime, timedelta
 from flask import Blueprint, request, jsonify, send_file, Response
 
+from lib.Stech import Validate
 from src.utils.Utils import Utils
 
 
@@ -20,6 +21,12 @@ def read_image_code():
     try:
         # Obtenemos la imagen en base64
         data = request.json
+
+        data = request.get_json()
+        error_validate, is_validate = Validate.validate_json_keys(data)
+        if is_validate:
+            raise ValueError(error_validate)
+
         image = data['image64']
 
         # Decodificamos la imagen
@@ -76,10 +83,16 @@ def leer_qr(ruta_imagen):
     # Si se encontró al menos un código QR
     if decodificaciones:
         # Retornar el dato decodificado del primer código QR encontrado
-        return decodificaciones[0].data.decode('utf-8')
+        return {
+            "success": True,
+            "message": decodificaciones[0].data.decode('utf-8')
+        }
     else:
         # Si no se encontró ningún código QR
-        return None
+        return {
+            "success": False,
+            "message": "No se encontró ningún código QR en la imagen"
+        }
 
 
 
