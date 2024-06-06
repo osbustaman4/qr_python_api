@@ -38,6 +38,9 @@ def read_image_code():
 
         # Leer el código QR de la imagen temporal
         qr_result = leer_qr(temp_path)
+
+        if not qr_result["success"]:
+            return Utils.create_response(qr_result["message"], False, 404)
         
         # Crear el JSON de respuesta
         response = {
