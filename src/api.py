@@ -1,4 +1,5 @@
 import base64
+import os
 import tempfile
 import traceback
 
@@ -41,6 +42,9 @@ def read_image_code():
 
         if not qr_result["success"]:
             return Utils.create_response(qr_result["message"], False, 404)
+        
+        # Cuando hayas terminado de usar el archivo temporal, puedes eliminarlo así:
+        os.remove(temp_path)
         
         # Crear el JSON de respuesta
         response = {
